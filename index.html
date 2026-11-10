@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAHAJ Lab</title>
+<meta name="description" content="Working prototype of SAHAJ, an assistant for voice, gesture and natural control of a PC.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <span class="brand">SAHAJ</span>
+    <button id="micBtn" class="toggle" aria-pressed="false">Start listening</button>
+    <button id="camBtn" class="toggle" aria-pressed="false">Start camera</button>
+    <p id="says" role="status" aria-live="polite">Ready. Press Start listening, or type a phrase below.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <h1>Control a PC by voice and hand gestures</h1>
+    <p>A working prototype of SAHAJ, the assistant proposed for Problem B. Speak, show a hand pose to the camera, or type. The small screen below reacts in real time, and SAHAJ tells you what it decided and why.</p>
+    <nav class="tabs" aria-label="Views">
+      <a href="#try" id="tab-try">Try it</a>
+      <a href="#inside" id="tab-inside">Under the hood</a>
+    </nav>
+  </div>
+
+  <section id="view-try" class="try" aria-label="Try it">
+    <div class="screen">
+      <div class="taskbar">
+        <button id="appNotes" data-say="open notes">Notes</button>
+        <button id="appSlides" data-say="open slides">Slides</button>
+        <span class="sensors" id="sensors"></span>
+      </div>
+      <div class="window" id="window"></div>
+      <div class="banner" id="banner" hidden></div>
+      <p class="heard" id="heard" aria-hidden="true"></p>
+      <form id="typeForm" autocomplete="off">
+        <label for="typeIn">No microphone? Type what you would say, one phrase at a time.</label>
+        <div class="row"><input type="text" id="typeIn" placeholder="For example: next slide"><button type="submit">Send</button></div>
+      </form>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <h2>Camera</h2>
+        <div class="cam" id="cam">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay" width="320" height="240"></canvas>
+          <p id="camOff">The camera is off. When it is on, frames are read in this tab and thrown away. Nothing is recorded or sent.</p>
+        </div>
+        <p class="small" id="pose">Hold an open palm for one second to turn gestures on.</p>
+        <p class="small">No camera? Press a pose instead:</p>
+        <div class="chips" id="poseBtns"></div>
+      </div>
+      <div class="card">
+        <h2>Things to say</h2>
+        <h3>Anywhere</h3>
+        <div class="chips"><button data-say="open slides">open slides</button><button data-say="open notes">open notes</button><button data-say="read it back">read it back</button><button data-say="undo that">undo that</button><button data-say="stop">stop</button></div>
+        <h3>In Slides</h3>
+        <div class="chips"><button data-say="next slide">next slide</button><button data-say="previous slide">previous slide</button></div>
+        <h3>In Notes, just talk. Or say</h3>
+        <div class="chips"><button data-say="Um we need two no three chairs">um we need two no three chairs</button><button data-say="start bullet list">start bullet list</button><button data-say="next item">next item</button><button data-say="end list">end list</button><button data-say="new paragraph">new paragraph</button><button data-say="close notes">close notes</button><button data-say="clear notes">clear notes</button></div>
+      </div>
+      <div class="card">
+        <h2>What SAHAJ did</h2>
+        <ol id="log" class="log"><li class="empty">Nothing yet.</li></ol>
+      </div>
+    </aside>
+  </section>
+
+  <section id="view-inside" class="inside" aria-label="Under the hood" hidden>
+    <div class="card">
+      <h2>Speech cleanup, step by step</h2>
+      <p class="small">Rules remove fillers. A model pass handles corrections. The meaning guard checks the result before anything is typed.</p>
+      <label for="stepIn">A dictated phrase</label>
+      <input type="text" id="stepIn" value="Um so the meeting is on uh Tuesday, no, Wednesday at 3">
+      <label class="check"><input type="checkbox" id="stepBreak"> Make the model pass misbehave, to test the guard</label>
+      <dl id="steps" class="steps"></dl>
+    </div>
+    <div class="card">
+      <h2>Self test</h2>
+      <p class="small">The page checks its own logic on your device every time it loads.</p>
+      <table id="tests"><thead><tr><th>Check</th><th>Passed</th></tr></thead><tbody></tbody></table>
+      <p class="small" id="kept"></p>
+    </div>
+    <div class="card">
+      <h2>When the laptop is busy</h2>
+      <label for="mem">Free memory: <b id="memV"></b></label><input type="range" id="mem" min="200" max="8000" step="100" value="4000">
+      <label for="load">Processor load: <b id="loadV"></b></label><input type="range" id="load" min="0" max="100" step="1" value="35">
+      <label class="check"><input type="checkbox" id="saver"> Battery saver is on</label>
+      <table id="shed"><thead><tr><th>Feature</th><th>State</th></tr></thead><tbody></tbody></table>
+      <p class="told">The user is told once: <b id="told"></b></p>
+    </div>
+    <div class="card">
+      <h2>Battery budget</h2>
+      <label for="dictH">Dictation: <b id="dictHV"></b></label><input type="range" id="dictH" min="0" max="8" step="0.5" value="1">
+      <label for="gestH">Gesture control: <b id="gestHV"></b></label><input type="range" id="gestH" min="0" max="4" step="0.5" value="1">
+      <label for="idleH">Idle: <b id="idleHV"></b></label><input type="range" id="idleH" min="0" max="12" step="1" value="8">
+      <pre id="math"></pre>
+      <p class="small">Power figures are design targets, to be measured on real laptops.</p>
+    </div>
+    <div class="card">
+      <h2>Measured on this device</h2>
+      <dl id="live" class="steps"></dl>
+      <p class="small">In this browser prototype, speech recognition is the browser's own and may use an online service. On the AI PC, SAHAJ uses the on device Windows speech model. The hand model already runs fully on this device.</p>
+    </div>
+  </section>
+
+  <footer>SAHAJ Lab. Prototype for Problem B, AI PC Accessibility Assistant. Azen Tashis, IIT Patna.</footer>
+</main>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
